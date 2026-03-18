@@ -10,7 +10,7 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          jwk-set-uri: ${SSO_JWKS_URL:PLACEHOLD:http://localhost:8090/.well-known/jwks.json}
+          jwk-set-uri: ${SSO_JWKS_URL:http://localhost:8090/.well-known/jwks.json}
   cloud:
     gateway:
       default-filters:
@@ -33,27 +33,27 @@ spring:
             allowCredentials: true
       routes:
         - id: sso-auth
-          uri: ${ROUTE_SSO_BASE_URL:PLACEHOLD:http://localhost:8090}
+          uri: ${ROUTE_SSO_BASE_URL:http://localhost:8090}
           predicates:
             - Path=/auth/**
         - id: sso-jwks
-          uri: ${ROUTE_SSO_BASE_URL:PLACEHOLD:http://localhost:8090}
+          uri: ${ROUTE_SSO_BASE_URL:http://localhost:8090}
           predicates:
             - Path=/.well-known/jwks.json
         - id: inventory-service
-          uri: ${ROUTE_INVENTORY_BASE_URL:PLACEHOLD:http://localhost:8081}
+          uri: ${ROUTE_INVENTORY_BASE_URL:http://localhost:8081}
           predicates:
             - Path=/api/products/**
         - id: order-service
-          uri: ${ROUTE_ORDER_BASE_URL:PLACEHOLD:http://localhost:8082}
+          uri: ${ROUTE_ORDER_BASE_URL:http://localhost:8082}
           predicates:
             - Path=/api/orders/**
         - id: payment-service
-          uri: ${ROUTE_PAYMENT_BASE_URL:PLACEHOLD:http://localhost:8083}
+          uri: ${ROUTE_PAYMENT_BASE_URL:http://localhost:8083}
           predicates:
             - Path=/api/payments/**
         - id: shipment-service
-          uri: ${ROUTE_ORDER_BASE_URL:PLACEHOLD:http://localhost:8082}
+          uri: ${ROUTE_ORDER_BASE_URL:http://localhost:8082}
           predicates:
             - Path=/api/shipments/**
 
