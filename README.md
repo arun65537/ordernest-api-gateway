@@ -18,7 +18,6 @@ Edge gateway for OrderNest with centralized auth at ingress.
 - `ROUTE_INVENTORY_BASE_URL`
 - `ROUTE_ORDER_BASE_URL`
 - `ROUTE_PAYMENT_BASE_URL`
-- `ROUTE_SHIPMENT_BASE_URL`
 
 ## Gateway Endpoints
 - `POST /auth/register` -> SSO service

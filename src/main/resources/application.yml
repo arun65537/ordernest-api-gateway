@@ -52,7 +52,7 @@ spring:
           uri: ${ROUTE_PAYMENT_BASE_URL:http://localhost:8083}
           predicates:
             - Path=/api/payments/**
-        - id: shipment-service
+        - id: shipment-via-order-service
           uri: ${ROUTE_ORDER_BASE_URL:http://localhost:8082}
           predicates:
             - Path=/api/shipments/**
