@@ -1,0 +1,64 @@
+server:
+  port: ${PORT:8080}
+
+spring:
+  config:
+    import: optional:file:./etc/secrets/config.properties,optional:file:/etc/secrets/config.properties
+  application:
+    name: ordernest-api-gateway
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: ${SSO_JWKS_URL:PLACEHOLD:http://localhost:8090/.well-known/jwks.json}
+  cloud:
+    gateway:
+      default-filters:
+        - RemoveRequestHeader=Cookie
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins:
+              - http://localhost:5173
+              - https://ordernest-web.onrender.com
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - PATCH
+              - DELETE
+              - OPTIONS
+            allowedHeaders:
+              - "*"
+            allowCredentials: true
+      routes:
+        - id: sso-auth
+          uri: ${ROUTE_SSO_BASE_URL:PLACEHOLD:http://localhost:8090}
+          predicates:
+            - Path=/auth/**
+        - id: sso-jwks
+          uri: ${ROUTE_SSO_BASE_URL:PLACEHOLD:http://localhost:8090}
+          predicates:
+            - Path=/.well-known/jwks.json
+        - id: inventory-service
+          uri: ${ROUTE_INVENTORY_BASE_URL:PLACEHOLD:http://localhost:8081}
+          predicates:
+            - Path=/api/products/**
+        - id: order-service
+          uri: ${ROUTE_ORDER_BASE_URL:PLACEHOLD:http://localhost:8082}
+          predicates:
+            - Path=/api/orders/**
+        - id: payment-service
+          uri: ${ROUTE_PAYMENT_BASE_URL:PLACEHOLD:http://localhost:8083}
+          predicates:
+            - Path=/api/payments/**
+        - id: shipment-service
+          uri: ${ROUTE_ORDER_BASE_URL:PLACEHOLD:http://localhost:8082}
+          predicates:
+            - Path=/api/shipments/**
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
