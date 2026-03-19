@@ -16,7 +16,8 @@ public class SecurityConfig {
         return http
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .authorizeExchange(exchanges -> exchanges
-                        .pathMatchers("/actuator/health", "/actuator/info", "/auth/**", "/.well-known/jwks.json").permitAll()
+                        .pathMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        .pathMatchers("/actuator/health", "/actuator/info", "/auth/**", "/api/auth/**", "/.well-known/jwks.json").permitAll()
                         .pathMatchers(HttpMethod.POST, "/api/shipments/status").hasRole("ADMIN")
                         .pathMatchers("/api/**").authenticated()
                         .anyExchange().permitAll()
