@@ -12,6 +12,10 @@ Edge gateway for OrderNest with centralized auth at ingress.
 ./gradlew bootRun
 ```
 
+## GitHub Actions Deploy
+- Add a repository secret named `RENDER_DEPLOY_HOOK_URL`.
+- The workflow in `.github/workflows/render-deploy.yml` triggers Render on pushes to `master` and on manual dispatch.
+
 ## Key Env Vars
 - `SSO_JWKS_URL`
 - `ROUTE_SSO_BASE_URL`

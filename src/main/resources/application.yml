@@ -1,6 +1,5 @@
 server:
-  port: ${PORT:8080}
-
+  port: 8093
 spring:
   config:
     import: optional:file:./etc/secrets/config.properties,optional:file:/etc/secrets/config.properties
@@ -13,32 +12,14 @@ spring:
           jwk-set-uri: ${SSO_JWKS_URL:http://localhost:8090/.well-known/jwks.json}
   cloud:
     gateway:
-      default-filters:
-        - RemoveRequestHeader=Cookie
-      globalcors:
-        add-to-simple-url-handler-mapping: true
-        cors-configurations:
-          '[/**]':
-            allowedOrigins:
-              - http://localhost:5173
-              - https://ordernest-web.onrender.com
-            allowedMethods:
-              - GET
-              - POST
-              - PUT
-              - PATCH
-              - DELETE
-              - OPTIONS
-            allowedHeaders:
-              - "*"
-            allowCredentials: true
       routes:
         - id: sso-auth
-          uri: ${ROUTE_SSO_BASE_URL:http://localhost:8090}
+#          uri: ${ROUTE_SSO_BASE_URL:http://localhost:8090}
+          uri: http://localhost:8090
           predicates:
-            - Path=/auth/**,/api/auth/**
+            - Path=/api/auth/**
           filters:
-            - RewritePath=/auth/(?<segment>.*), /api/auth/$\{segment}
+            - RewritePath=/api/auth/(?<segment>.*), /auth/$\{segment}
         - id: sso-jwks
           uri: ${ROUTE_SSO_BASE_URL:http://localhost:8090}
           predicates:
