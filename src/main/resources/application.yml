@@ -14,8 +14,7 @@ spring:
     gateway:
       routes:
         - id: sso-auth
-#          uri: ${ROUTE_SSO_BASE_URL:http://localhost:8090}
-          uri: http://localhost:8090
+          uri: ${ROUTE_SSO_BASE_URL:http://localhost:8090}
           predicates:
             - Path=/api/auth/**
           filters:
