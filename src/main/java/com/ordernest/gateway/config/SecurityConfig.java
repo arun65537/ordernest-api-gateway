@@ -19,38 +19,28 @@ public class SecurityConfig {
             "/.well-known/**"
     };
 
-    // ✅ 1. PUBLIC ENDPOINTS (NO JWT)
     @Bean
     @Order(1)
     public SecurityWebFilterChain publicChain(ServerHttpSecurity http) {
         return http
-                .securityMatcher(
-                        ServerWebExchangeMatchers.pathMatchers(PUBLIC_PATHS)
-                )
+                .securityMatcher(ServerWebExchangeMatchers.pathMatchers(PUBLIC_PATHS))
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
-                .authorizeExchange(ex -> ex
-                        .anyExchange().permitAll()
-                )
-                .build();  // ← No oauth2ResourceServer here — no JWT filter at all
+                .authorizeExchange(ex -> ex.anyExchange().permitAll())
+                .build();
     }
 
-    // ✅ 2. SECURED ENDPOINTS (JWT REQUIRED)
     @Bean
     @Order(2)
     public SecurityWebFilterChain securedChain(ServerHttpSecurity http) {
         return http
-                .securityMatcher(
-                        ServerWebExchangeMatchers.pathMatchers(
-                                "/api/**",   // all other API routes
-                                "/actuator/**"
-                        )
-                )
+                .securityMatcher(ServerWebExchangeMatchers.pathMatchers("/api/**", "/actuator/**"))
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .authorizeExchange(exchanges -> exchanges
                         .pathMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .pathMatchers("/actuator/**").permitAll()
                         .pathMatchers(HttpMethod.POST, "/api/shipments/status").hasRole("ADMIN")
-                        .anyExchange().authenticated()  // ← was permitAll, should be authenticated
+                        .pathMatchers(HttpMethod.PATCH, "/api/products/*/stock").hasRole("ADMIN")
+                        .anyExchange().authenticated()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt())
                 .build();
