@@ -1,0 +1,46 @@
+name: Warm Render Services
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+jobs:
+  warmup:
+    name: Ping deployed services
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      API_GATEWAY_URL: ${{ vars.API_GATEWAY_URL || 'https://ordernest-api-gateway.onrender.com/actuator/health' }}
+      SSO_URL: ${{ vars.SSO_URL || 'https://sso-service-lvow.onrender.com/actuator/health' }}
+      INVENTORY_URL: ${{ vars.INVENTORY_URL || 'https://ordernest-inventory-service.onrender.com/actuator/health' }}
+      ORDER_URL: ${{ vars.ORDER_URL || 'https://ordernest-order-service.onrender.com/actuator/health' }}
+      PAYMENT_URL: ${{ vars.PAYMENT_URL || 'https://ordernest-payment-service.onrender.com/actuator/health' }}
+      NOTIFICATION_URL: ${{ vars.NOTIFICATION_URL || 'https://notification-service-b9le.onrender.com/actuator/health' }}
+    steps:
+      - name: Warm services
+        shell: bash
+        run: |
+          urls=(
+            "$API_GATEWAY_URL"
+            "$SSO_URL"
+            "$INVENTORY_URL"
+            "$ORDER_URL"
+            "$PAYMENT_URL"
+            "$NOTIFICATION_URL"
+          )
+
+          for url in "${urls[@]}"; do
+            echo "Warming $url"
+            status=$(curl --silent --show-error --location \
+              --output /dev/null \
+              --write-out "%{http_code}" \
+              --max-time 60 \
+              "$url" || true)
+
+            if [ -z "$status" ] || [ "$status" = "000" ]; then
+              echo "No response from $url"
+            else
+              echo "Received HTTP $status from $url"
+            fi
+          done
