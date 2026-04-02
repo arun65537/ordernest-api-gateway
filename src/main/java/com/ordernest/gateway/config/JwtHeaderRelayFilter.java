@@ -18,19 +18,13 @@ public class JwtHeaderRelayFilter implements GlobalFilter, Ordered {
     @Override
     public Mono<Void> filter(org.springframework.web.server.ServerWebExchange exchange,
                              org.springframework.cloud.gateway.filter.GatewayFilterChain chain) {
-        ServerHttpRequest.Builder requestBuilder = exchange.getRequest().mutate();
-        requestBuilder.headers(headers -> {
-            headers.remove(USER_ID_HEADER);
-            headers.remove(USER_EMAIL_HEADER);
-            headers.remove(USER_ROLES_HEADER);
-        });
-
         return exchange.getPrincipal()
-                .cast(JwtAuthenticationToken.class)
+                .ofType(JwtAuthenticationToken.class)
                 .map(jwtAuthenticationToken -> {
                     String userId = jwtAuthenticationToken.getToken().getClaimAsString("userId");
                     String email = jwtAuthenticationToken.getToken().getClaimAsString("email");
                     List<String> roles = jwtAuthenticationToken.getToken().getClaimAsStringList("roles");
+                    ServerHttpRequest.Builder requestBuilder = exchange.getRequest().mutate();
 
                     requestBuilder.headers(headers -> {
                         if (userId != null && !userId.isBlank()) {
@@ -46,7 +40,7 @@ public class JwtHeaderRelayFilter implements GlobalFilter, Ordered {
 
                     return exchange.mutate().request(requestBuilder.build()).build();
                 })
-                .defaultIfEmpty(exchange.mutate().request(requestBuilder.build()).build())
+                .defaultIfEmpty(exchange)
                 .flatMap(chain::filter);
     }
 
