@@ -3,7 +3,9 @@ package com.ordernest.gateway.config;
 import java.util.List;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.server.reactive.ServerHttpRequest;
+import org.springframework.http.server.reactive.ServerHttpRequestDecorator;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
@@ -24,19 +26,28 @@ public class JwtHeaderRelayFilter implements GlobalFilter, Ordered {
                     String userId = jwtAuthenticationToken.getToken().getClaimAsString("userId");
                     String email = jwtAuthenticationToken.getToken().getClaimAsString("email");
                     List<String> roles = jwtAuthenticationToken.getToken().getClaimAsStringList("roles");
-                    ServerHttpRequest.Builder requestBuilder = exchange.getRequest().mutate();
 
-                    if (userId != null && !userId.isBlank()) {
-                        requestBuilder.header(USER_ID_HEADER, userId);
-                    }
-                    if (email != null && !email.isBlank()) {
-                        requestBuilder.header(USER_EMAIL_HEADER, email);
-                    }
-                    if (roles != null && !roles.isEmpty()) {
-                        requestBuilder.header(USER_ROLES_HEADER, String.join(",", roles));
-                    }
+                    ServerHttpRequest decoratedRequest = new ServerHttpRequestDecorator(exchange.getRequest()) {
+                        @Override
+                        public HttpHeaders getHeaders() {
+                            HttpHeaders headers = new HttpHeaders();
+                            headers.putAll(super.getHeaders());
 
-                    return exchange.mutate().request(requestBuilder.build()).build();
+                            if (userId != null && !userId.isBlank()) {
+                                headers.set(USER_ID_HEADER, userId);
+                            }
+                            if (email != null && !email.isBlank()) {
+                                headers.set(USER_EMAIL_HEADER, email);
+                            }
+                            if (roles != null && !roles.isEmpty()) {
+                                headers.set(USER_ROLES_HEADER, String.join(",", roles));
+                            }
+
+                            return headers;
+                        }
+                    };
+
+                    return exchange.mutate().request(decoratedRequest).build();
                 })
                 .defaultIfEmpty(exchange)
                 .flatMap(chain::filter);
