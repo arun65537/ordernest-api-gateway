@@ -1,15 +1,21 @@
-FROM gradle:8.10.2-jdk17 AS build
-WORKDIR /workspace
-
-COPY build.gradle settings.gradle ./
-COPY src src
-RUN gradle --no-daemon clean bootJar
-
-FROM eclipse-temurin:17-jre
+FROM eclipse-temurin:17-jdk-jammy AS builder
 WORKDIR /app
 
-COPY --from=build /workspace/build/libs/ordernest-api-gateway-0.0.1-SNAPSHOT.jar app.jar
+COPY gradlew gradlew
+COPY gradle gradle
+COPY build.gradle settings.gradle ./
 
-ENV JAVA_OPTS=""
+RUN chmod +x gradlew
+RUN ./gradlew --no-daemon dependencies > /dev/null 2>&1 || true
+
+COPY src src
+RUN ./gradlew --no-daemon clean bootJar -x test
+
+FROM eclipse-temurin:17-jre-jammy
+WORKDIR /app
+
+COPY --from=builder /app/build/libs/*.jar app.jar
+
+ENV JAVA_OPTS="-XX:+UseSerialGC -XX:TieredStopAtLevel=1"
 EXPOSE 8093
-ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar --server.port=${PORT:-8093}"]
