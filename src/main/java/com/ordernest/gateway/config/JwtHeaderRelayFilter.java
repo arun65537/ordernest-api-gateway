@@ -26,17 +26,15 @@ public class JwtHeaderRelayFilter implements GlobalFilter, Ordered {
                     List<String> roles = jwtAuthenticationToken.getToken().getClaimAsStringList("roles");
                     ServerHttpRequest.Builder requestBuilder = exchange.getRequest().mutate();
 
-                    requestBuilder.headers(headers -> {
-                        if (userId != null && !userId.isBlank()) {
-                            headers.set(USER_ID_HEADER, userId);
-                        }
-                        if (email != null && !email.isBlank()) {
-                            headers.set(USER_EMAIL_HEADER, email);
-                        }
-                        if (roles != null && !roles.isEmpty()) {
-                            headers.set(USER_ROLES_HEADER, String.join(",", roles));
-                        }
-                    });
+                    if (userId != null && !userId.isBlank()) {
+                        requestBuilder.header(USER_ID_HEADER, userId);
+                    }
+                    if (email != null && !email.isBlank()) {
+                        requestBuilder.header(USER_EMAIL_HEADER, email);
+                    }
+                    if (roles != null && !roles.isEmpty()) {
+                        requestBuilder.header(USER_ROLES_HEADER, String.join(",", roles));
+                    }
 
                     return exchange.mutate().request(requestBuilder.build()).build();
                 })
