@@ -17,5 +17,6 @@ WORKDIR /app
 COPY --from=builder /app/build/libs/*.jar app.jar
 
 ENV JAVA_OPTS="-XX:+UseSerialGC -XX:TieredStopAtLevel=1"
+ENV SPRING_PROFILES_ACTIVE=prod
 EXPOSE 8093
-ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar --server.port=${PORT:-8093}"]
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar --spring.profiles.active=${SPRING_PROFILES_ACTIVE} --server.port=${PORT:-8093}"]

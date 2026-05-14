@@ -1,13 +1,4 @@
-server:
-  port: 8093
-
 spring:
-  profiles:
-    default: local
-  config:
-    import: optional:file:/etc/secrets/application-prod.yml
-  application:
-    name: ordernest-api-gateway
   security:
     oauth2:
       resourceserver:
@@ -15,8 +6,6 @@ spring:
           jwk-set-uri: http://localhost:8090/.well-known/jwks.json
   cloud:
     gateway:
-      default-filters:
-        - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin Access-Control-Allow-Headers Access-Control-Allow-Methods, RETAIN_FIRST
       routes:
         - id: sso-auth
           uri: http://localhost:8090
@@ -44,9 +33,3 @@ spring:
           uri: http://localhost:8082
           predicates:
             - Path=/api/shipments/**
-
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info,metrics

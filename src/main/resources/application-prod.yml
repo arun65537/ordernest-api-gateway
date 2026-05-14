@@ -1,52 +1,38 @@
 server:
-  port: 8093
+  port: ${PORT:8093}
 
 spring:
-  profiles:
-    default: local
-  config:
-    import: optional:file:/etc/secrets/application-prod.yml
-  application:
-    name: ordernest-api-gateway
   security:
     oauth2:
       resourceserver:
         jwt:
-          jwk-set-uri: http://localhost:8090/.well-known/jwks.json
+          jwk-set-uri: https://sso-service-lvow.onrender.com/.well-known/jwks.json
   cloud:
     gateway:
-      default-filters:
-        - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin Access-Control-Allow-Headers Access-Control-Allow-Methods, RETAIN_FIRST
       routes:
         - id: sso-auth
-          uri: http://localhost:8090
+          uri: https://sso-service-lvow.onrender.com
           predicates:
             - Path=/api/auth/**
           filters:
             - RewritePath=/api/auth/(?<segment>.*), /auth/$\{segment}
         - id: sso-jwks
-          uri: http://localhost:8090
+          uri: https://sso-service-lvow.onrender.com
           predicates:
             - Path=/.well-known/jwks.json
         - id: inventory-service
-          uri: http://localhost:8081
+          uri: https://ordernest-inventory-service.onrender.com
           predicates:
             - Path=/api/products/**
         - id: order-service
-          uri: http://localhost:8082
+          uri: https://ordernest-order-service.onrender.com
           predicates:
             - Path=/api/orders/**
         - id: payment-service
-          uri: http://localhost:8083
+          uri: https://ordernest-payment-service.onrender.com
           predicates:
             - Path=/api/payments/**
         - id: shipment-via-order-service
-          uri: http://localhost:8082
+          uri: https://ordernest-order-service.onrender.com
           predicates:
             - Path=/api/shipments/**
-
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info,metrics
